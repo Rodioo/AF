@@ -53,5 +53,29 @@
     <None Include="sortaret.out">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="apm.in">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="apm.out">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="disjoint.in">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="disjoint.out">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="dijkstra.in">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="dijkstra.out">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bellmanford.in">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bellmanford.out">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

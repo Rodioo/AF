@@ -4,8 +4,11 @@
 #include <stack>
 #include <iostream>
 #include <algorithm>
+#include <limits.h>
 
 using namespace std;
+
+typedef pair<int, int> ii;
 
 const int noduriMAX = 100001;
 
@@ -17,17 +20,18 @@ private:
 	int plecareBFS;
 	vector <vector<int>> adiacenta;
 	vector <vector<int>> ans; //pt muchie critica si pt biconexe
-	vector <vector<pair<int, int>>> costuri;
+	vector <vector<ii>> adiacentaCosturi;
 
-	void DFS(int start, bool vizitat[]);
 	void Tarjan(int nod, int nrPasi[], int minimPasi[],
 		stack<int>* st, bool inSt[], vector<vector<int>>& afisare);
 	void DFSTopologic(int start, bool vizitat[], stack <int>& st);
 	void TBFA(int nod, int parinte, int nrPasi[], int minimPasi[]);
 	void DFSBiconex(int nod, int nrPasi[], int minimPasi[], int parinte[], stack <pair<int, int>>& muchii);
+	
 public:
 	void GrafNeorientat(string fisier);
 	void GrafOrientat(string fisier);
+	void DFS(int start, bool vizitat[]);
 	void NumaraCompCnx();
 	void CitireBFS();
 	void BFS();
@@ -37,6 +41,10 @@ public:
 	vector<vector<int>> criticalConnections(int n, vector<vector<int>>& connections);
 	void Biconexe();
 	void citireAPM(string fisier);
+	void citireDjikstra(string fisier);
+	void primAPM();
+	void Dijkstra();
+	void BellmanFord();
 };
 
 void Graf::GrafNeorientat(string fisier)
@@ -146,10 +154,8 @@ void Graf::BFS()
 
 void Graf::Tarjan(int nod, int nrPasi[], int minimPasi[], stack<int>* st, bool inSt[], vector<vector<int>>& afisare)
 {
-	//calc nr de pasi pt fiecare nod in DFS 
-	//si pt fiecare nod dupa ce termin recursia pe vecinii sai 
-	//actualizez minimul cu minimul dintre nod 
-	//si cel mai jos copil al sau din arborele DFS
+	//calc nr de pasi pt fiecare nod in DFS si pt fiecare nod dupa ce termin recursia pe vecinii sai 
+	//actualizez minimul cu minimul dintre nod si cel mai jos copil al sau din arborele DFS
 	static int pas = 0;
 	nrPasi[nod] = minimPasi[nod] = ++pas;
 	st->push(nod);
@@ -402,20 +408,242 @@ void Graf::citireAPM(string fisier)
 	int start;
 	int capat;
 	int cost;
-	costuri.resize(nrNoduri + 1);
+	adiacentaCosturi.resize(nrNoduri + 1);
 	for (int i = 0; i < nrMuchii; ++i)
 	{
 		in >> start >> capat >> cost;
-		costuri[start].push_back({ capat, cost });
-		costuri[capat].push_back({ start, cost });
+		adiacentaCosturi[start].push_back(make_pair(capat, cost));
+		adiacentaCosturi[capat].push_back(make_pair(start, cost));
 	}
 	in.close();
 }
 
+void Graf::primAPM()
+{
+	priority_queue<ii, vector<ii>, greater<ii>> noduriAPM;
+	vector<int> costuri(nrNoduri + 1, 1001);
+	vector<bool> inAPM(nrNoduri + 1, false);
+	vector<int> parinte(nrNoduri + 1, -1);
+	noduriAPM.push(make_pair(0, 1));
+	costuri[1] = 0;
+	
+	while (!noduriAPM.empty())
+	{
+		int nod = noduriAPM.top().second;
+		noduriAPM.pop();
+		
+		if (inAPM[nod])
+			continue;
+
+		inAPM[nod] = true;
+		for (auto muchie : adiacentaCosturi[nod])
+		{
+			int vecin = muchie.first;
+			int cost = muchie.second;
+			if (cost < costuri[vecin])
+			{
+				costuri[vecin] = cost;
+				noduriAPM.push(make_pair(cost, vecin));
+				parinte[vecin] = nod;
+			}
+		}
+	}
+	ofstream out("apm.out");
+	int s = 0;
+	for (int i = 1; i <= nrNoduri; i++)
+		s += costuri[i];
+	out << s << "\n";
+	out << nrNoduri - 1 << "\n";
+	for (int i = 2; i <= nrNoduri; i++)
+	{
+		out << i << " " << parinte[i] << "\n";
+	}
+	
+}
+
+void Graf::citireDjikstra(string fisier)
+{
+	ifstream in(fisier);
+	in >> nrNoduri >> nrMuchii;
+	int start;
+	int capat;
+	int cost;
+	adiacentaCosturi.resize(nrNoduri + 1);
+	for (int i = 0; i < nrMuchii; ++i)
+	{
+		in >> start >> capat >> cost;
+		adiacentaCosturi[start].push_back(make_pair(capat, cost));
+	}
+	in.close();
+}
+
+void Graf::Dijkstra() 
+{
+
+	vector<int> dist(nrNoduri + 1, INT_MAX);
+	vector<bool>viz(nrNoduri + 1, false);
+	priority_queue<ii, vector<ii>, greater<ii>> costuri;
+
+	dist[1] = 0;
+	costuri.push({ 0, 1 });
+
+	while (!costuri.empty()) {
+		int nod = costuri.top().second;
+		costuri.pop();
+
+		if (!viz[nod]) {
+			viz[nod] = true;
+
+			for (auto vecin : adiacentaCosturi[nod]) 
+			{
+				if (dist[nod] + vecin.second < dist[vecin.first]) 
+				{
+					dist[vecin.first] = dist[nod] + vecin.second;
+					costuri.push({ dist[vecin.first], vecin.first });
+				}
+			}
+		}
+	}
+
+	ofstream out("dijkstra.out");
+
+	for (int i = 2; i <= nrNoduri; ++i) 
+	{
+		if (dist[i] != INT_MAX) 
+			out << dist[i] << " ";
+		else 
+			out << "0 ";
+	}
+	out.close();
+}
+
+void Graf::BellmanFord()
+{
+	ofstream out("bellmanford.out");
+
+	vector<int> dist(nrNoduri + 1, INT_MAX);
+	vector<bool> inCoada(nrNoduri + 1, false);
+	vector<int> relax(nrNoduri + 1, 0);
+	queue<int> noduri;
+	
+	dist[1] = 0;
+	inCoada[1] = true;
+	noduri.push(1);
+
+	while (!noduri.empty())
+	{
+		int nod = noduri.front();
+		noduri.pop();
+		inCoada[nod] = false;
+
+		for (auto muchie : adiacentaCosturi[nod])
+		{
+			int vecin = muchie.first;
+			int cost = muchie.second;
+
+			if (dist[nod] + cost < dist[vecin])
+			{
+				dist[vecin] = dist[nod] + cost;
+				relax[vecin]++;
+
+				if (relax[vecin] == nrNoduri)
+				{
+					out << "Ciclu negativ!";
+					return;
+				}
+				
+				if (!inCoada[vecin])
+				{
+					noduri.push(vecin);
+					inCoada[vecin] = true;	
+				}
+				
+			}
+		}
+	}
+	for (int i = 2; i <= nrNoduri; i++)
+	{
+		if (dist[i] == INT_MAX)
+			out << "0 ";
+		else
+			out << dist[i] << " ";
+	}
+	out.close();
+}
+
+class Disjoint {
+private:
+	int nrElem;
+	int nrOp;
+	int* parinte;
+	int* inaltime;
+
+	int findRoot(int x)
+	{
+		if (parinte[x] != x)
+			parinte[x] = findRoot(parinte[x]);
+
+		return parinte[x];
+	}
+
+	void combin(int x, int y)
+	{
+		int xRoot = findRoot(x);
+		int yRoot = findRoot(y);
+
+		if (xRoot == yRoot)
+			return;
+
+		if (inaltime[xRoot] < inaltime[yRoot])
+			parinte[xRoot] = yRoot;
+		else if (inaltime[xRoot] > inaltime[yRoot])
+			parinte[yRoot] = xRoot;
+		else
+		{
+			parinte[yRoot] = xRoot;
+			inaltime[xRoot] ++;
+		}
+
+
+	}
+public:
+
+	void afisare()
+	{
+		ifstream in("disjoint.in");
+		ofstream out("disjoint.out");
+		
+		in >> nrElem >> nrOp;
+		parinte = new int[nrElem + 1];
+		inaltime = new int[nrElem + 1];
+		for (int i = 1; i <= nrElem; i++)
+			parinte[i] = i;
+		int cod, x1, x2;
+		for (int i = 0; i < nrOp; i++)
+		{
+			in >> cod >> x1 >> x2;
+			if (cod == 1)
+			{
+				combin(x1, x2);
+			}
+			else
+			{
+				if (findRoot(x1) == findRoot(x2))
+					out << "DA\n";
+				else
+					out << "NU\n";
+					
+			}
+		}
+		in.close();
+		out.close();
+	}
+};
+
 int main()
 {
 	Graf g;
-	g.citireAPM("apm.in");
-	
+	g.citireDjikstra("dijkstra.in");
+	g.Dijkstra();
 	return 0;
 }
