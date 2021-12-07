@@ -14,3 +14,5 @@ Probleme:
   - Disjoint
   - Dijkstra
   - Bellman Ford
+  - Diametrul unui arbore
+  - Roy Floyd
