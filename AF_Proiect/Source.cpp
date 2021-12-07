@@ -12,6 +12,75 @@ typedef pair<int, int> ii;
 
 const int noduriMAX = 100001;
 
+class Disjoint {
+private:
+	int nrElem;
+	int nrOp;
+	int* parinte;
+	int* inaltime;
+
+	int findRoot(int x)
+	{
+		if (parinte[x] != x)
+			parinte[x] = findRoot(parinte[x]);
+
+		return parinte[x];
+	}
+
+	void combin(int x, int y)
+	{
+		int xRoot = findRoot(x);
+		int yRoot = findRoot(y);
+
+		if (xRoot == yRoot)
+			return;
+
+		if (inaltime[xRoot] < inaltime[yRoot])
+			parinte[xRoot] = yRoot;
+		else if (inaltime[xRoot] > inaltime[yRoot])
+			parinte[yRoot] = xRoot;
+		else
+		{
+			parinte[yRoot] = xRoot;
+			inaltime[xRoot] ++;
+		}
+
+
+	}
+public:
+
+	void afisare()
+	{
+		ifstream in("disjoint.in");
+		ofstream out("disjoint.out");
+
+		in >> nrElem >> nrOp;
+		parinte = new int[nrElem + 1];
+		inaltime = new int[nrElem + 1];
+		for (int i = 1; i <= nrElem; i++)
+			parinte[i] = i;
+		int cod, x1, x2;
+		for (int i = 0; i < nrOp; i++)
+		{
+			in >> cod >> x1 >> x2;
+			if (cod == 1)
+			{
+				combin(x1, x2);
+			}
+			else
+			{
+				if (findRoot(x1) == findRoot(x2))
+					out << "DA\n";
+				else
+					out << "NU\n";
+
+			}
+		}
+		in.close();
+		out.close();
+	}
+};
+
 class Graf
 {
 private:
@@ -27,7 +96,7 @@ private:
 	void DFSTopologic(int start, bool vizitat[], stack <int>& st);
 	void TBFA(int nod, int parinte, int nrPasi[], int minimPasi[]);
 	void DFSBiconex(int nod, int nrPasi[], int minimPasi[], int parinte[], stack <pair<int, int>>& muchii);
-	
+	ii BFSdarb(int start);
 public:
 	void GrafNeorientat(string fisier);
 	void GrafOrientat(string fisier);
@@ -45,6 +114,11 @@ public:
 	void primAPM();
 	void Dijkstra();
 	void BellmanFord();
+	void citireRoy(string fisier);
+	void RoyFloyd();
+	void citireArbore(string fisier);
+	void darb();
+
 };
 
 void Graf::GrafNeorientat(string fisier)
@@ -571,79 +645,92 @@ void Graf::BellmanFord()
 	out.close();
 }
 
-class Disjoint {
-private:
-	int nrElem;
-	int nrOp;
-	int* parinte;
-	int* inaltime;
-
-	int findRoot(int x)
-	{
-		if (parinte[x] != x)
-			parinte[x] = findRoot(parinte[x]);
-
-		return parinte[x];
-	}
-
-	void combin(int x, int y)
-	{
-		int xRoot = findRoot(x);
-		int yRoot = findRoot(y);
-
-		if (xRoot == yRoot)
-			return;
-
-		if (inaltime[xRoot] < inaltime[yRoot])
-			parinte[xRoot] = yRoot;
-		else if (inaltime[xRoot] > inaltime[yRoot])
-			parinte[yRoot] = xRoot;
-		else
+void Graf::citireRoy(string fisier) {
+	ifstream in(fisier);
+	in >> nrNoduri;
+	int cost;
+	adiacenta.resize(nrNoduri + 1, vector<int>(nrNoduri + 1));
+	for(int i = 1; i <= nrNoduri; i++)
+		for (int j = 1; j <= nrNoduri; j++)
 		{
-			parinte[yRoot] = xRoot;
-			inaltime[xRoot] ++;
+			in >> cost;
+			adiacenta[i][j] = cost;
 		}
+	in.close();
+}
 
+void Graf::RoyFloyd() {
 
-	}
-public:
+	for (int k = 1; k <= nrNoduri; k++)
+		for (int i = 1; i <= nrNoduri; i++)
+			for (int j = 1; j <= nrNoduri; j++)
+				if (adiacenta[i][k] && adiacenta[k][j] && (adiacenta[i][j] > adiacenta[i][k] + adiacenta[k][j] || !adiacenta[i][j]) && i != j)
+					adiacenta[i][j] = adiacenta[i][k] + adiacenta[k][j];
 
-	void afisare()
+	ofstream out("royfloyd.out");
+	for (int i = 1; i <= nrNoduri; i++)
 	{
-		ifstream in("disjoint.in");
-		ofstream out("disjoint.out");
-		
-		in >> nrElem >> nrOp;
-		parinte = new int[nrElem + 1];
-		inaltime = new int[nrElem + 1];
-		for (int i = 1; i <= nrElem; i++)
-			parinte[i] = i;
-		int cod, x1, x2;
-		for (int i = 0; i < nrOp; i++)
-		{
-			in >> cod >> x1 >> x2;
-			if (cod == 1)
-			{
-				combin(x1, x2);
-			}
-			else
-			{
-				if (findRoot(x1) == findRoot(x2))
-					out << "DA\n";
-				else
-					out << "NU\n";
-					
+		for (int j = 1; j <= nrNoduri; j++)
+			out << adiacenta[i][j] << " ";
+		out << "\n";
+	}
+	out.close();
+}
+
+void Graf::citireArbore(string fisier) {
+	ifstream in(fisier);
+	in >> nrNoduri;
+	int start;
+	int capat;
+	adiacenta.resize(nrNoduri + 1);
+	for (int i = 0; i < nrNoduri - 1; ++i)
+	{
+		in >> start >> capat;
+		adiacenta[start].push_back(capat);
+		adiacenta[capat].push_back(start);
+	}
+	in.close();
+}
+
+ii Graf::BFSdarb(int start) {
+	bool vizitat[noduriMAX] = { false };
+	int dist[noduriMAX] = { 0 };
+	queue<int> q;
+	int ultimul;
+
+	vizitat[start] = true;
+	dist[start] = 1;
+	q.push(start);
+
+	while (!q.empty()) {
+		int nod = q.front();
+		q.pop();
+		for (int vecin : adiacenta[nod]) {
+			if (!vizitat[vecin]) {
+				vizitat[vecin] = true;
+				dist[vecin] = dist[nod] + 1;
+				q.push(vecin);
+				ultimul = vecin;
 			}
 		}
-		in.close();
-		out.close();
 	}
-};
+
+	return {ultimul, dist[ultimul] };
+}
+
+void Graf::darb() {
+	ii aux;
+	aux = BFSdarb(1);
+	aux = BFSdarb(aux.first);
+	ofstream out("darb.out");
+	out << aux.second;
+	out.close();
+}
 
 int main()
 {
 	Graf g;
-	g.citireDjikstra("dijkstra.in");
-	g.Dijkstra();
+	g.citireArbore("darb.in");
+	g.darb();
 	return 0;
 }

@@ -77,5 +77,19 @@
     <None Include="bellmanford.out">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="royfloyd.out">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="darb.in">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="darb.out">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="royfloyd.in">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

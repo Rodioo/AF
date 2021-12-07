@@ -152,6 +152,8 @@
     <None Include="biconex.out" />
     <None Include="ctc.in" />
     <None Include="ctc.out" />
+    <None Include="darb.in" />
+    <None Include="darb.out" />
     <None Include="dfs.in" />
     <None Include="dfs.out" />
     <None Include="dijkstra.in" />
@@ -159,8 +161,12 @@
     <None Include="disjoint.in" />
     <None Include="disjoint.out" />
     <None Include="havel.in" />
+    <None Include="royfloyd.out" />
     <None Include="sortaret.in" />
     <None Include="sortaret.out" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="royfloyd.in" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
